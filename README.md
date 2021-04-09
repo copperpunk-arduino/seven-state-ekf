@@ -9,3 +9,10 @@ Key functions:
 * `UpdateFromHeading(float heading)` - Updates heading measurement based on external (non-IMU) reading
 
 For an example of this library being used, please see the [IcmInsDualGps](https://github.com/copperpunk-arduino/icm-ins-dual-gps) repository.
+<br><br>
+## <u>Contact Us</u>
+If you have any suggestions for improving this library, there are a few ways to get in touch:<br>
+
+*   Create a new issue
+*   Submit a pull request
+*   Virtual meeting using our [Open Source Office Hours](https://www.copperpunk.com/service-page/open-source-office-hours)
