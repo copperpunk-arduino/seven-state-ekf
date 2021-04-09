@@ -38,7 +38,6 @@ class SevenStateEkf
 {
 public:
 	SevenStateEkf();
-	void GetRbgPrimeAccelInertial(float attitude[], float rbg_prime[3][3], float accel[3], float accel_inertial[3]);
 	void Predict(float attitude[], float accel[], float dt);
 	void UpdateFromGps(float position[], float velocity[]);
 	float UpdateFromHeading(float heading);
@@ -48,6 +47,8 @@ public:
 	float GetHeading();
 	void SetAltitude(float altitude);
 private:
+	void GetRbgPrimeAccelInertial(float attitude[], float rbg_prime[3][3], float accel[3], float accel_inertial[3]);
+
 	float ekf_state_[EKF_NUM_STATES];
 	float ekf_cov_[EKF_NUM_STATES][EKF_NUM_STATES];
 	float Q[EKF_NUM_STATES];
