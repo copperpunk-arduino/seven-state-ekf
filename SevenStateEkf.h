@@ -26,18 +26,18 @@
 	const float kGpsVelXYStd = .088;
 	const float kGpsVelZStd = .31;
 
-	// Magnetometer
-	const float kMagYawStd = 0.2;
+	// Heading Measurement
+	const float kHeadingYawStd = 0.2;
 
-	const float dtIMU = 0.005;
+	const float kDtImu = 0.05; // Expected IMU update interval
 
 	const int EKF_NUM_STATES = 7;
 
 
-class SevenStateEKF
+class SevenStateEkf
 {
 public:
-	SevenStateEKF();
+	SevenStateEkf();
 	void GetRbgPrimeAccelInertial(float attitude[], float rbg_prime[3][3], float accel[3], float accel_inertial[3]);
 	void Predict(float attitude[], float accel[], float dt);
 	void UpdateFromGps(float position[], float velocity[]);
@@ -52,7 +52,7 @@ private:
 	float ekf_cov_[EKF_NUM_STATES][EKF_NUM_STATES];
 	float Q[EKF_NUM_STATES];
 	float R_GPS[6];
-	float R_Mag[1];
+	float R_Heading[1];
 };
 
 #endif

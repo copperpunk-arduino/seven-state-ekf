@@ -1,6 +1,6 @@
-#include "SevenStateEKF.h"
+#include "SevenStateEkf.h"
 
-SevenStateEKF::SevenStateEKF()
+SevenStateEkf::SevenStateEkf()
 {
 	for (int i = 0; i < EKF_NUM_STATES; i++)
 	{
@@ -29,19 +29,19 @@ SevenStateEKF::SevenStateEKF()
 	R_GPS[5] = kGpsVelZStd * kGpsVelZStd;
 
 	// magnetometer measurement model covariance
-	R_Mag[0] = kMagYawStd * kMagYawStd;
+	R_Heading[0] = kHeadingYawStd * kHeadingYawStd;
 
 	// load the transition model covariance
-	Q[0] = dtIMU * kQPosXYStd*kQPosXYStd;
-	Q[1] = dtIMU * kQPosXYStd*kQPosXYStd;
-	Q[2] = dtIMU * kQPosZStd*kQPosZStd;
-	Q[3] = dtIMU * kQVelXYStd*kQVelXYStd;
-	Q[4] = dtIMU * kQVelXYStd*kQVelXYStd;
-	Q[5] = dtIMU * kQVelZStd*kQVelZStd;
-	Q[6] = dtIMU * kQYawStd*kQYawStd;
+	Q[0] = kDtImu * kQPosXYStd*kQPosXYStd;
+	Q[1] = kDtImu * kQPosXYStd*kQPosXYStd;
+	Q[2] = kDtImu * kQPosZStd*kQPosZStd;
+	Q[3] = kDtImu * kQVelXYStd*kQVelXYStd;
+	Q[4] = kDtImu * kQVelXYStd*kQVelXYStd;
+	Q[5] = kDtImu * kQVelZStd*kQVelZStd;
+	Q[6] = kDtImu * kQYawStd*kQYawStd;
 }
 
-void SevenStateEKF::GetRbgPrimeAccelInertial(float attitude[], float rbg_prime[3][3], float accel[3], float accel_inertial[3])
+void SevenStateEkf::GetRbgPrimeAccelInertial(float attitude[], float rbg_prime[3][3], float accel[3], float accel_inertial[3])
 {
 	float cosphi = cos(attitude[0]);
 	float sinphi = sin(attitude[0]);
@@ -62,7 +62,7 @@ void SevenStateEKF::GetRbgPrimeAccelInertial(float attitude[], float rbg_prime[3
 	accel_inertial[1] = accel[1] * (cosphi*cospsi + sinphi * sinpsi*sintheta) - accel[2] * (cospsi*sinphi - cosphi * sinpsi*sintheta) + accel[0] * costheta*sinpsi;
 	accel_inertial[2] = accel[2] * cosphi*costheta - accel[0] * sintheta + accel[1] * costheta*sinphi;
 }
-void SevenStateEKF::Predict(float attitude[], float accel[], float dt)
+void SevenStateEkf::Predict(float attitude[], float accel[], float dt)
 {
 	float accel_inertial[3];
 	float rbg_prime[3][3];
@@ -87,12 +87,12 @@ void SevenStateEKF::Predict(float attitude[], float accel[], float dt)
 			}
 		}
 	}
-	g_prime[0][3] = dtIMU;
-	g_prime[1][4] = dtIMU;
-	g_prime[2][5] = dtIMU;
-	g_prime[3][6] = (rbg_prime[0][0] * accel[0] + rbg_prime[0][1] * accel[1] + rbg_prime[0][2] * accel[2])*dtIMU;
-	g_prime[4][6] = (rbg_prime[1][0] * accel[0] + rbg_prime[1][1] * accel[1] + rbg_prime[1][2] * accel[2])*dtIMU;
-	g_prime[5][6] = (rbg_prime[2][0] * accel[0] + rbg_prime[2][1] * accel[1] + rbg_prime[2][2] * accel[2])*dtIMU;
+	g_prime[0][3] = dt;
+	g_prime[1][4] = dt;
+	g_prime[2][5] = dt;
+	g_prime[3][6] = (rbg_prime[0][0] * accel[0] + rbg_prime[0][1] * accel[1] + rbg_prime[0][2] * accel[2])*dt;
+	g_prime[4][6] = (rbg_prime[1][0] * accel[0] + rbg_prime[1][1] * accel[1] + rbg_prime[1][2] * accel[2])*dt;
+	g_prime[5][6] = (rbg_prime[2][0] * accel[0] + rbg_prime[2][1] * accel[1] + rbg_prime[2][2] * accel[2])*dt;
 
 	//// 
 	//ekfCov = g_prime * ekfCov* gPrime.transpose() + Q;
@@ -125,7 +125,7 @@ void SevenStateEKF::Predict(float attitude[], float accel[], float dt)
 	ekf_cov_[6][6] = ekf_cov_[6][6] + Q[6];
 }
 
-void SevenStateEKF::UpdateFromGps(float position[], float velocity[])
+void SevenStateEkf::UpdateFromGps(float position[], float velocity[])
 {
 	float delta_z[6];
 	delta_z[0] = position[0] - ekf_state_[0];
@@ -238,15 +238,15 @@ void SevenStateEKF::UpdateFromGps(float position[], float velocity[])
 	ekf_cov_[6][6] = ekf_cov_[6][6] - K[6][3] * ekf_cov_[3][6] - K[6][4] * ekf_cov_[4][6] - K[6][5] * ekf_cov_[5][6];
 }
 
-float SevenStateEKF::UpdateFromHeading(float heading)
+float SevenStateEkf::UpdateFromHeading(float heading)
 {
 	float delta_z = heading - ekf_state_[6];
 	if (delta_z > M_PI) delta_z -= 6.2831853071;
 	if (delta_z < -M_PI) delta_z += 6.2831853071;
 	//printf("state/meas/z_pred:%.2f/%.2f/%.2f\n", ekf_state_[6) * 180 / F_PI, mag_yaw * 180 / F_PI, zFromX(0) * 180 / F_PI);
 	float inv_mat = 0;
-	if ((ekf_cov_[6][6] + R_Mag[0]) != 0) {
-		inv_mat = 1 / (ekf_cov_[6][6] + R_Mag[0]);
+	if ((ekf_cov_[6][6] + R_Heading[0]) != 0) {
+		inv_mat = 1 / (ekf_cov_[6][6] + R_Heading[0]);
 	}
 	ekf_state_[3] += delta_z * ekf_cov_[3][6] * inv_mat;
 	ekf_state_[4] += delta_z * ekf_cov_[4][6] * inv_mat;
@@ -315,21 +315,21 @@ float SevenStateEKF::UpdateFromHeading(float heading)
 	return delta_yaw;
 }
 
-void SevenStateEKF::GetPosition(float position[])
+void SevenStateEkf::GetPosition(float position[])
 {
 	position[0] = ekf_state_[0];
 	position[1] = ekf_state_[1];
 	position[2] = ekf_state_[2];
 }
 
-void SevenStateEKF::GetVelocity(float velocity[])
+void SevenStateEkf::GetVelocity(float velocity[])
 {
 	velocity[0] = ekf_state_[3];
 	velocity[1] = ekf_state_[4];
 	velocity[2] = ekf_state_[5];
 }
 
-float SevenStateEKF::SetHeading(float heading)
+float SevenStateEkf::SetHeading(float heading)
 {
 	float delta_z = heading - ekf_state_[6];
 	if (delta_z > M_PI) delta_z -= 6.2831853071;
@@ -338,12 +338,12 @@ float SevenStateEKF::SetHeading(float heading)
 	return delta_z;
 }
 
-float SevenStateEKF::GetHeading()
+float SevenStateEkf::GetHeading()
 {
 	return ekf_state_[6];
 }
 
-void SevenStateEKF::SetAltitude(float altitude)
+void SevenStateEkf::SetAltitude(float altitude)
 {
 	ekf_state_[2] = altitude;
 }
