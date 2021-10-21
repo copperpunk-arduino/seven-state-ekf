@@ -16,9 +16,9 @@
 
 	const float kQPosXYStd = .1;
 	const float kQPosZStd = .05;
-	const float kQVelXYStd = .25;
+	const float kQVelXYStd = .05;
 	const float kQVelZStd = .1;
-	const float kQYawStd = .08;
+	const float kQYawStd = .18;
 
 	// GPS measurement std deviations
 	const float kGpsPosXYStd = .715;
@@ -27,7 +27,7 @@
 	const float kGpsVelZStd = .31;
 
 	// Heading Measurement
-	const float kHeadingYawStd = 0.2;
+	const float kHeadingYawStd = 0.02;
 
 	const float kDtImu = 0.05; // Expected IMU update interval
 

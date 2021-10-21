@@ -73,7 +73,7 @@ void SevenStateEkf::Predict(float attitude[], float accel[], float dt)
 	ekf_state_[2] += ekf_state_[5] * dt;
 	ekf_state_[3] += accel_inertial[0] * dt;
 	ekf_state_[4] += accel_inertial[1] * dt;
-	ekf_state_[5] += (accel_inertial[2] - GRAVITY) * dt;
+	ekf_state_[5] += (accel_inertial[2] + GRAVITY) * dt;
 	ekf_state_[6] = attitude[2];
 	// Update Covariance matrix
 	float g_prime[EKF_NUM_STATES][EKF_NUM_STATES];
@@ -130,7 +130,7 @@ void SevenStateEkf::UpdateFromGps(float position[], float velocity[])
 	float delta_z[6];
 	delta_z[0] = position[0] - ekf_state_[0];
 	delta_z[1] = position[1] - ekf_state_[1];
-	delta_z[2] = position[2] - ekf_state_[2];
+	delta_z[2] = -position[2] - ekf_state_[2];
 	delta_z[3] = velocity[0] - ekf_state_[3];
 	delta_z[4] = velocity[1] - ekf_state_[4];
 	delta_z[5] = velocity[2] - ekf_state_[5];
@@ -345,5 +345,5 @@ float SevenStateEkf::GetHeading()
 
 void SevenStateEkf::SetAltitude(float altitude)
 {
-	ekf_state_[2] = altitude;
+	ekf_state_[2] = -altitude;
 }
